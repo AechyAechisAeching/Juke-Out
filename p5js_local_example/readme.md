@@ -28,3 +28,5 @@ Make the enemy spawn from the corners or they start at the middle
 Make the game menu so ur cursor will be already at center
 Recreate the faces cus of quality :thumbsdown:
 about the fps drops you have to deal with it. no jk uh just wait for the end result to debug that later on
+
+Created a github desktop for the files

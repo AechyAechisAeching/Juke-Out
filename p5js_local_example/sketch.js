@@ -1,30 +1,58 @@
-let balls = []; 
-let square; 
-let squareFace; 
-let combinedImg; 
-let ballsImage; 
+let balls = []; // Initialize balls as an empty array
+let square;
+let squareFace;
+let combinedImg;
+let ballsImage;
 let ballsface;
 let combinedBallsImg;
 let crystal;
-let x = 0;
-let y = 0;
 let crystalObj;
+let squareLoaded = false;
+let ballsLoaded = false;
+let crystalLoaded = false;
 
-//All preload assets (images for characters and enemies)
+// Preload assets (images for characters and enemies)
 function preload() {
-  square = loadImage("/assets/square.png");
-  squareFace = loadImage("/assets/squareface.png");
-  ballsImage = loadImage("/assets/balls.png");
-  ballsface = loadImage("/assets/ballsface.png");
-  crystal = loadImage("/assets/crystal.png");
+  square = loadImage(
+    "/assets/square.png",
+    () => {
+      console.log("Square loaded successfully");
+      squareLoaded = true;
+    },
+    () => console.error("Failed to load square.png")
+  );
+  squareFace = loadImage(
+    "/assets/squareface.png",
+    () => console.log("SquareFace loaded successfully"),
+    () => console.error("Failed to load squareface.png")
+  );
+  ballsImage = loadImage(
+    "/assets/balls.png",
+    () => {
+      console.log("BallsImage loaded successfully");
+      ballsLoaded = true;
+    },
+    () => console.error("Failed to load balls.png")
+  );
+  ballsface = loadImage(
+    "/assets/ballsface.png",
+    () => console.log("BallsFace loaded successfully"),
+    () => console.error("Failed to load ballsface.png")
+  );
+  crystal = loadImage(
+    "/assets/crystal.png",
+    () => {
+      console.log("Crystal loaded successfully");
+      crystalLoaded = true;
+    },
+    () => console.error("Failed to load crystal.png")
+  );
 }
 
 let threshold = 30;
 let accChangeX = 0;
 let accChangeY = 0;
 let accChangeT = 0;
-
-// Continues on line 51
 let gameOver = false;
 
 // No editing of the width and height
@@ -33,27 +61,32 @@ let gameOver = false;
 function setup() {
   createCanvas(1500, 720);
 
-  // Resizing Character
-  combinedImg = createGraphics(40, 40); 
-  combinedImg.image(square, 0, 0, 40, 40);
-  combinedImg.image(squareFace, 0, 0, 40, 40);
+  // Combine square and squareFace images
+  combinedImg = createGraphics(40, 40);
+  if (squareLoaded) {
+    combinedImg.image(square, 0, 0, 40, 40);
+    combinedImg.image(squareFace, 0, 0, 40, 40);
+  }
 
-  // Resizing enemies
+  // Combine ballsImage and ballsface images
   combinedBallsImg = createGraphics(40, 40);
-  combinedBallsImg.image(ballsImage, 0, 0, 40, 40);
-  combinedBallsImg.image(ballsface, 0, 0, 40, 40); 
+  if (ballsLoaded) {
+    combinedBallsImg.image(ballsImage, 0, 0, 40, 40);
+    combinedBallsImg.image(ballsface, 0, 0, 40, 40);
+  }
 
-  // Created amount of enemies in the canvas
-  for (let i = 0; i < 5; i++) {
+  // Create multiple enemies
+  for (let i = 0; i < 30; i++) {
     balls.push(new Ball());
   }
 
+  // Create crystal object
   crystalObj = new Crystal();
 
   noCursor();
 }
 
-// Game Over Menu (fix later on)
+// Game Over Menu
 function draw() {
   if (gameOver) {
     background(0);
@@ -63,29 +96,38 @@ function draw() {
     text("Game Over", width / 2, height / 2);
     return;
   }
+
   document.addEventListener("contextmenu", (event) => event.preventDefault());
 
   background(0);
 
+  // Update and display balls
   for (let i = 0; i < balls.length; i++) {
     balls[i].move();
     balls[i].display();
 
-    // Collision adjusts for square and enemies
+    // Check collision with player
     if (balls[i].checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
       gameOver = true;
     }
   }
 
+  // Check for device shake
   checkForShake();
 
-  // Collision adjusts for cystal hitbox
+  // Check collision with crystal
   if (crystalObj.checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
     crystalObj.randomizePosition();
   }
 
-  //Custom Cursor on everything
-  image(combinedImg, mouseX - 20, mouseY - 20, 40, 40);
+  // Display custom cursor and crystal
+  if (squareLoaded) {
+    image(combinedImg, mouseX - 20, mouseY - 20, 40, 40);
+  } else {
+    fill(255);
+    rect(mouseX - 20, mouseY - 20, 40, 40);
+  }
+
   crystalObj.display();
 }
 
@@ -93,13 +135,14 @@ function checkForShake() {
   accChangeX = abs(accelerationX - pAccelerationX);
   accChangeY = abs(accelerationY - pAccelerationY);
   accChangeT = accChangeX + accChangeY;
+
   if (accChangeT >= threshold) {
     for (let i = 0; i < balls.length; i++) {
       balls[i].shake();
       balls[i].turn();
     }
   } else {
-    // Slows ball movement speed (use for wave features)
+    // Slow down ball movement
     for (let i = 0; i < balls.length; i++) {
       balls[i].stopShake();
       balls[i].turn();
@@ -127,7 +170,7 @@ class Ball {
     this.y += this.yspeed * this.direction;
   }
 
-  // canvas edge adjustments
+  // Canvas edge adjustments
   turn() {
     if (this.x < 0) {
       this.x = 0;
@@ -144,12 +187,13 @@ class Ball {
     }
   }
 
- // SHAKE SHAKE SHAKE
+  // Increase speed on shake
   shake() {
     this.xspeed += random(5, accChangeX / 3);
     this.yspeed += random(5, accChangeX / 3);
   }
 
+  // Restore original speed
   stopShake() {
     if (this.xspeed > this.oxspeed) {
       this.xspeed -= 0.6;
@@ -164,10 +208,15 @@ class Ball {
   }
 
   display() {
-    image(combinedBallsImg, this.x, this.y, this.diameter, this.diameter);
+    if (ballsLoaded) {
+      image(combinedBallsImg, this.x, this.y, this.diameter, this.diameter);
+    } else {
+      fill(255, 0, 0);
+      ellipse(this.x + this.diameter / 2, this.y + this.diameter / 2, this.diameter);
+    }
   }
 
-  // Square collision with enememies (its a check function)
+  // Check collision with the player
   checkCollision(sqX, sqY, sqWidth, sqHeight) {
     return (
       this.x < sqX + sqWidth &&
@@ -187,7 +236,12 @@ class Crystal {
 
   // Display the crystal
   display() {
-    image(crystal, this.x, this.y, this.size, this.size);
+    if (crystalLoaded) {
+      image(crystal, this.x, this.y, this.size, this.size);
+    } else {
+      fill(0, 255, 255);
+      rect(this.x, this.y, this.size, this.size);
+    }
   }
 
   // Check collision with the square
@@ -200,7 +254,7 @@ class Crystal {
     );
   }
 
-  // Crystal Position Randomizer
+  // Randomize crystal position
   randomizePosition() {
     this.x = random(width - this.size);
     this.y = random(height - this.size);

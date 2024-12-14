@@ -9,6 +9,7 @@ let crystal;
 let x = 0;
 let y = 0;
 let crystalObj;
+
 //All preload assets (images for characters and enemies)
 function preload() {
   square = loadImage("/assets/square.png");
@@ -28,7 +29,7 @@ let gameOver = false;
 
 // No editing of the width and height
 // You will mess up the edge collision
-// Okay Vincent? No touching.
+// Okay? No touching.
 function setup() {
   createCanvas(1500, 720);
 

@@ -22,9 +22,9 @@ function preload() {
     () => console.error("Failed to load square.png")
   );
   squareFace = loadImage(
-    "/assets/squareface.png",
+    "/assets/squareFace.png",
     () => console.log("SquareFace loaded successfully"),
-    () => console.error("Failed to load squareface.png")
+    () => console.error("Failed to load squareFace.png")
   );
   ballsImage = loadImage(
     "/assets/balls.png",
@@ -231,7 +231,7 @@ class Crystal {
   constructor() {
     this.x = random(width - 40); // Initial random position
     this.y = random(height - 40);
-    this.size = 40; // Size of the crystal
+    this.size = 20; // Size of the crystal
   }
 
   // Display the crystal

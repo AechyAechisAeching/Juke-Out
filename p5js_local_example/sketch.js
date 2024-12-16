@@ -59,7 +59,7 @@ let gameOver = false;
 // You will mess up the edge collision
 // Okay? No touching.
 function setup() {
-  createCanvas(1500, 720);
+  createCanvas(1500, 690);
 
   // Combine square and squareFace images
   combinedImg = createGraphics(40, 40);
@@ -76,7 +76,7 @@ function setup() {
   }
 
   // Create multiple enemies
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 20; i++) {
     balls.push(new Ball());
   }
 
@@ -85,23 +85,115 @@ function setup() {
 
   noCursor();
 }
+var whichscreen = "start"
+var score = 0
 
-// Game Over Menu
+let gameState = "start"; // Define initial game state
+
+// Updated draw function
 function draw() {
-  if (gameOver) {
-    background(0);
-    fill(255, 0, 0);
-    textSize(64);
-    textAlign(CENTER, CENTER);
-    text("Game Over", width / 2, height / 2);
-    return;
+  background(0);
+
+  if (gameState === "start") {
+    drawStartScreen();
+  } else if (gameState === "playing") {
+    playGame();
+  } else if (gameState === "gameOver") {
+    drawGameOverScreen();
   }
+}
+
+// Function to handle the start screen
+function drawStartScreen() {
+  fill(255);
+  textSize(64);
+  textAlign(CENTER, CENTER);
+  text("Juke Out", width / 2, height / 3);
+
+  textSize(58);
+  text("PLAY NOW", width / 2, height / 2);
+  text("PRESS SPACE", width / 2, height / 2 + 180);
+
+  // Transition to the game on key press
+  if (keyIsPressed && key === ' ') {
+    gameState = "playing";
+  }
+}
+
+// Function to handle the game logic
+function playGame() {
+  // Update and display balls
+  for (let i = 0; i < balls.length; i++) {
+    balls[i].move();
+    balls[i].display();
+
+    // Check collision with player
+    if (balls[i].checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
+      gameState = "gameOver"; // Transition to game over state
+    }
+  }
+
+  // Check for device shake
+  checkForShake();
+
+  // Check collision with crystal
+  if (crystalObj.checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
+    crystalObj.randomizePosition();
+    score++; // Increment score when a crystal is collected
+  }
+
+  // Display custom cursor and crystal
+  if (squareLoaded) {
+    image(combinedImg, mouseX - 20, mouseY - 20, 40, 40);
+  } else {
+    fill(255);
+    rect(mouseX - 20, mouseY - 20, 40, 40);
+  }
+
+  crystalObj.display();
+
+  // Display score
+  fill(255);
+  textSize(24);
+  textAlign(LEFT, TOP, CENTER);
+  text(`Score: ${score}`, 700, 10);
+}
+
+// Function to handle the game over screen
+function drawGameOverScreen() {
+  fill(255, 0, 0);
+  textSize(104);
+  textAlign(CENTER, CENTER);
+  text("GAME OVER!", width / 2, height / 3);
+
+  textSize(64);
+  text("PLAY AGAIN", width / 2, height / 2 + 50);
+  textSize(44)
+  text("PRESS R", width / 2, height / 2 + 150);
+
+  // Restart the game on key press
+  if (keyIsPressed && key === 'r') {
+    resetGame();
+    gameState = "start"; // Return to the start screen
+  }
+}
+
+// Function to reset the game
+function resetGame() {
+  balls = [];
+  for (let i = 0; i < 1; i++) {
+    balls.push(new Ball());
+  }
+  crystalObj.randomizePosition();
+  score = 0;
+  gameOver = false;
+
 
   document.addEventListener("contextmenu", (event) => event.preventDefault());
 
   background(0);
 
-  // Update and display balls
+  // Update and display ballss
   for (let i = 0; i < balls.length; i++) {
     balls[i].move();
     balls[i].display();
@@ -231,7 +323,7 @@ class Crystal {
   constructor() {
     this.x = random(width - 40); // Initial random position
     this.y = random(height - 40);
-    this.size = 20; // Size of the crystal
+    this.size = 1220; // Size of the crystal
   }
 
   // Display the crystal

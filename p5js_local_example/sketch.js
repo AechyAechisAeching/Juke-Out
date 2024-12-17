@@ -1,4 +1,4 @@
-let balls = []; // Initialize balls as an empty array
+let balls = []; 
 let square;
 let squareFace;
 let combinedImg;
@@ -174,14 +174,13 @@ function drawGameOverScreen() {
   // Restart the game on key press
   if (keyIsPressed && key === 'r') {
     resetGame();
-    gameState = "start"; // Return to the start screen
+    gameState = "start"; // Returning to the startscreen again
   }
 }
 
-// Function to reset the game
 function resetGame() {
   balls = [];
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 5; i++) {
     balls.push(new Ball());
   }
   crystalObj.randomizePosition();
@@ -193,18 +192,17 @@ function resetGame() {
 
   background(0);
 
-  // Update and display ballss
+  // Update and display the balls
   for (let i = 0; i < balls.length; i++) {
     balls[i].move();
     balls[i].display();
 
-    // Check collision with player
+    // Checks collision with the user
     if (balls[i].checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
       gameOver = true;
     }
   }
 
-  // Check for device shake
   checkForShake();
 
   // Check collision with crystal
@@ -212,7 +210,7 @@ function resetGame() {
     crystalObj.randomizePosition();
   }
 
-  // Display custom cursor and crystal
+  // Displays the custom cursor
   if (squareLoaded) {
     image(combinedImg, mouseX - 20, mouseY - 20, 40, 40);
   } else {
@@ -323,7 +321,7 @@ class Crystal {
   constructor() {
     this.x = random(width - 40); // Initial random position
     this.y = random(height - 40);
-    this.size = 1220; // Size of the crystal
+    this.size = 20; // Size of the crystal
   }
 
   // Display the crystal

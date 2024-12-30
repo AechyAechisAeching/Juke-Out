@@ -1,352 +1,357 @@
-let balls = []; 
-let square;
-let squareFace;
-let combinedImg;
-let ballsImage;
-let ballsface;
-let combinedBallsImg;
-let crystal;
-let crystalObj;
-let squareLoaded = false;
-let ballsLoaded = false;
-let crystalLoaded = false;
+let balls = [];
+let walls = [];
+let cursor;
+let crystals = [];
+let powerUps = [];
+let score = 0;
+let wave = 1;
+let superSpeedActive = false;
+let boss;
+let isBossActive = false;
 
-// Preload assets (images for characters and enemies)
-function preload() {
-  square = loadImage(
-    "/assets/square.png",
-    () => {
-      console.log("Square loaded successfully");
-      squareLoaded = true;
-    },
-    () => console.error("Failed to load square.png")
-  );
-  squareFace = loadImage(
-    "/assets/squareFace.png",
-    () => console.log("SquareFace loaded successfully"),
-    () => console.error("Failed to load squareFace.png")
-  );
-  ballsImage = loadImage(
-    "/assets/balls.png",
-    () => {
-      console.log("BallsImage loaded successfully");
-      ballsLoaded = true;
-    },
-    () => console.error("Failed to load balls.png")
-  );
-  ballsface = loadImage(
-    "/assets/ballsface.png",
-    () => console.log("BallsFace loaded successfully"),
-    () => console.error("Failed to load ballsface.png")
-  );
-  crystal = loadImage(
-    "/assets/crystal.png",
-    () => {
-      console.log("Crystal loaded successfully");
-      crystalLoaded = true;
-    },
-    () => console.error("Failed to load crystal.png")
-  );
-}
-
-let threshold = 30;
-let accChangeX = 0;
-let accChangeY = 0;
-let accChangeT = 0;
-let gameOver = false;
-
-// No editing of the width and height
-// You will mess up the edge collision
-// Okay? No touching.
 function setup() {
   createCanvas(1500, 690);
 
-  // Combine square and squareFace images
-  combinedImg = createGraphics(40, 40);
-  if (squareLoaded) {
-    combinedImg.image(square, 0, 0, 40, 40);
-    combinedImg.image(squareFace, 0, 0, 40, 40);
-  }
+  walls.push(new Wall(200, 150, 400, 20)); //  wall
+  walls.push(new Wall(300, 300, 20, 200)); //  wall
+  walls.push(new Wall(500, 500, 300, 20)); //  wall
+  walls.push(new Wall(800, 200, 20, 300)); //  vertical wall
+  walls.push(new Wall(1000, 400, 200, 20)); //  horizontal wall
+  walls.push(new Wall(1200, 100, 20, 400)); // vertical wall
 
-  // Combine ballsImage and ballsface images
-  combinedBallsImg = createGraphics(40, 40);
-  if (ballsLoaded) {
-    combinedBallsImg.image(ballsImage, 0, 0, 40, 40);
-    combinedBallsImg.image(ballsface, 0, 0, 40, 40);
-  }
+  cursor = new Cursor();
 
-  // Create multiple enemies
-  for (let i = 0; i < 20; i++) {
-    balls.push(new Ball());
-  }
+  balls.push(new Ball(random(width), random(height), wave));
 
-  // Create crystal object
-  crystalObj = new Crystal();
-
-  noCursor();
+  spawnCrystal();
 }
-var whichscreen = "start"
-var score = 0
 
-let gameState = "start"; // Define initial game state
-
-// Updated draw function
 function draw() {
   background(0);
 
-  if (gameState === "start") {
-    drawStartScreen();
-  } else if (gameState === "playing") {
-    playGame();
-  } else if (gameState === "gameOver") {
-    drawGameOverScreen();
-  }
-}
-
-// Function to handle the start screen
-function drawStartScreen() {
-  fill(255);
-  textSize(64);
-  textAlign(CENTER, CENTER);
-  text("Juke Out", width / 2, height / 3);
-
-  textSize(58);
-  text("PLAY NOW", width / 2, height / 2);
-  text("PRESS SPACE", width / 2, height / 2 + 180);
-
-  // Transition to the game on key press
-  if (keyIsPressed && key === ' ') {
-    gameState = "playing";
-  }
-}
-
-// Function to handle the game logic
-function playGame() {
-  // Update and display balls
-  for (let i = 0; i < balls.length; i++) {
-    balls[i].move();
+  for (let i = balls.length - 1; i >= 0; i--) {
+    balls[i].update();
     balls[i].display();
 
-    // Check collision with player
-    if (balls[i].checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
-      gameState = "gameOver"; // Transition to game over state
+    if (balls[i].isColliding(cursor)) {
+      balls.splice(i, 1);  
+      cursor.die();  
+      noLoop();
     }
+
+    balls[i].checkWalls(walls);
   }
 
-  // Check for device shake
-  checkForShake();
-
-  // Check collision with crystal
-  if (crystalObj.checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
-    crystalObj.randomizePosition();
-    score++; // Increment score when a crystal is collected
+  for (let wall of walls) {
+    wall.display();
   }
 
-  // Display custom cursor and crystal
-  if (squareLoaded) {
-    image(combinedImg, mouseX - 20, mouseY - 20, 40, 40);
-  } else {
-    fill(255);
-    rect(mouseX - 20, mouseY - 20, 40, 40);
-  }
+  cursor.update();
+  cursor.display();
 
-  crystalObj.display();
-
-  // Display score
+  // Display score and wave
   fill(255);
   textSize(24);
-  textAlign(LEFT, TOP, CENTER);
-  text(`Score: ${score}`, 700, 10);
-}
+  textAlign(RIGHT, TOP);
+  text("Score: " + score, width - 20, 20);
+  textSize(32);
+  textAlign(LEFT, TOP);
+  text("Wave: " + wave, 20, 20);
 
-// Function to handle the game over screen
-function drawGameOverScreen() {
-  fill(255, 0, 0);
-  textSize(104);
-  textAlign(CENTER, CENTER);
-  text("GAME OVER!", width / 2, height / 3);
+  if (balls.length === 0 && !isBossActive) {
+    wave++;
+    if (wave > 20) {
+      isBossActive = true;
+      boss = new Boss(width / 2, height / 2);
+      balls = [];
+    } else {
+      for (let i = 0; i < Math.min(wave, 20); i++) {
+        balls.push(new Ball(random(width), random(height), wave));
+      }
+    }
+    spawnCrystal();
 
-  textSize(64);
-  text("PLAY AGAIN", width / 2, height / 2 + 50);
-  textSize(44)
-  text("PRESS R", width / 2, height / 2 + 150);
-
-  // Restart the game on key press
-  if (keyIsPressed && key === 'r') {
-    resetGame();
-    gameState = "start"; // Returning to the startscreen again
-  }
-}
-
-function resetGame() {
-  balls = [];
-  for (let i = 0; i < 5; i++) {
-    balls.push(new Ball());
-  }
-  crystalObj.randomizePosition();
-  score = 0;
-  gameOver = false;
-
-
-  document.addEventListener("contextmenu", (event) => event.preventDefault());
-
-  background(0);
-
-  // Update and display the balls
-  for (let i = 0; i < balls.length; i++) {
-    balls[i].move();
-    balls[i].display();
-
-    // Checks collision with the user
-    if (balls[i].checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
-      gameOver = true;
+    if (wave >= 20 && powerUps.length === 0) {
+      spawnPowerUp();
     }
   }
 
-  checkForShake();
+  for (let powerUp of powerUps) {
+    powerUp.display();
 
-  // Check collision with crystal
-  if (crystalObj.checkCollision(mouseX - 20, mouseY - 20, 40, 40)) {
-    crystalObj.randomizePosition();
-  }
-
-  // Displays the custom cursor
-  if (squareLoaded) {
-    image(combinedImg, mouseX - 20, mouseY - 20, 40, 40);
-  } else {
-    fill(255);
-    rect(mouseX - 20, mouseY - 20, 40, 40);
-  }
-
-  crystalObj.display();
-}
-
-function checkForShake() {
-  accChangeX = abs(accelerationX - pAccelerationX);
-  accChangeY = abs(accelerationY - pAccelerationY);
-  accChangeT = accChangeX + accChangeY;
-
-  if (accChangeT >= threshold) {
-    for (let i = 0; i < balls.length; i++) {
-      balls[i].shake();
-      balls[i].turn();
-    }
-  } else {
-    // Slow down ball movement
-    for (let i = 0; i < balls.length; i++) {
-      balls[i].stopShake();
-      balls[i].turn();
+    if (powerUp.isCollected(cursor)) {
+      score += 10;
+      powerUp.respawn();
+      if (isBossActive) {
+        boss.takeDamage(10);
+        if (boss.health <= 0) {
+          boss.die();
+          isBossActive = false;
+          wave = 1;
+          balls.push(new Ball(random(width), random(height), wave));
+        }
+      }
     }
   }
+
+  for (let crystal of crystals) {
+    crystal.display();
+
+    if (crystal.isCollected(cursor)) {
+      score += 10; 
+      crystal.respawn();
+      wave++; 
+      balls.push(new Ball(random(width), random(height), wave));
+    }
+  }
+
+  if (isBossActive) {
+    boss.update();
+    boss.display();
+  }
 }
 
-// BALLERS
+function spawnCrystal() {
+  let x = random(20, width - 20);
+  let y = random(20, height - 20);
+  crystals.push(new Crystal(x, y));
+}
+
+function spawnPowerUp() {
+  let x = random(20, width - 20);
+  let y = random(20, height - 20);
+  powerUps.push(new PowerUp(x, y));
+}
+
 class Ball {
-  constructor() {
-    this.x = random(width);
-    this.y = random(height);
-    this.diameter = random(30, 60);
-    this.xspeed = random(-2, 8);
-    this.yspeed = random(-2, 2);
-    this.direction = 1.7;
+  constructor(x, y, wave) {
+    this.pos = createVector(x, y);
+    this.vel = createVector(0, 0); 
+    this.radius = 10 + wave; 
+    this.type = random(["chasing", "bouncing", "random"]); 
+    this.color = color(random(255), random(255), random(255));
+    this.wave = wave;
 
-    // Original speed for slowing down
-    this.oxspeed = this.xspeed;
-    this.oyspeed = this.yspeed;
-  }
+    // Prevents spawning nearby player
+    while (dist(this.pos.x, this.pos.y, cursor.pos.x, cursor.pos.y) < 100) {
+      this.pos = createVector(random(width), random(height));
+    }
 
-  move() {
-    this.x += this.xspeed * this.direction;
-    this.y += this.yspeed * this.direction;
-  }
-
-  // Canvas edge adjustments
-  turn() {
-    if (this.x < 0) {
-      this.x = 0;
-      this.direction = -this.direction;
-    } else if (this.y < 0) {
-      this.y = 0;
-      this.direction = -this.direction;
-    } else if (this.x > width - this.diameter) {
-      this.x = width - this.diameter;
-      this.direction = -this.direction;
-    } else if (this.y > height - this.diameter) {
-      this.y = height - this.diameter;
-      this.direction = -this.direction;
+    if (this.type === "chasing") {
+      let direction = cursor.pos.copy().sub(this.pos).normalize();
+      this.vel = direction.mult(wave * 0.5); 
+    } else if (this.type === "bouncing") {
+      this.vel = p5.Vector.random2D().mult(wave * 0.75);
+    } else {
+      this.vel = p5.Vector.random2D().mult(wave * 0.75);
     }
   }
 
-  // Increase speed on shake
-  shake() {
-    this.xspeed += random(5, accChangeX / 3);
-    this.yspeed += random(5, accChangeX / 3);
-  }
-
-  // Restore original speed
-  stopShake() {
-    if (this.xspeed > this.oxspeed) {
-      this.xspeed -= 0.6;
-    } else {
-      this.xspeed = this.oxspeed;
+  update() {
+    if (this.type === "chasing") {
+      let direction = cursor.pos.copy().sub(this.pos).normalize();
+      this.vel = direction.mult(this.wave * 0.5); // Adjustable ball speed
     }
-    if (this.yspeed > this.oyspeed) {
-      this.yspeed -= 0.6;
-    } else {
-      this.yspeed = this.oyspeed;
+
+    this.pos.add(this.vel);
+
+    // makes sure it bounces off the canvas
+    if (this.pos.x < this.radius || this.pos.x > width - this.radius) {
+      this.vel.x *= -1;
+      this.pos.x = constrain(this.pos.x, this.radius, width - this.radius);
+    }
+    if (this.pos.y < this.radius || this.pos.y > height - this.radius) {
+      this.vel.y *= -1;
+      this.pos.y = constrain(this.pos.y, this.radius, height - this.radius);
     }
   }
 
   display() {
-    if (ballsLoaded) {
-      image(combinedBallsImg, this.x, this.y, this.diameter, this.diameter);
-    } else {
-      fill(255, 0, 0);
-      ellipse(this.x + this.diameter / 2, this.y + this.diameter / 2, this.diameter);
+    fill(this.color);
+    noStroke();
+    ellipse(this.pos.x, this.pos.y, this.radius * 2);
+  }
+
+  checkWalls(walls) {
+    for (let wall of walls) {
+      if (wall.isColliding(this)) {
+        let normal = wall.getNormal(this);
+        this.vel.reflect(normal);
+        // Prevent ball from getting stuck in wall (needs fixing)
+        this.pos.add(this.vel);
+      }
     }
   }
 
-  // Check collision with the player
-  checkCollision(sqX, sqY, sqWidth, sqHeight) {
+  isColliding(other) {
+    let d = dist(this.pos.x, this.pos.y, other.pos.x, other.pos.y);
+    return d < this.radius + other.radius;
+  }
+}
+
+class Wall {
+  constructor(x, y, w, h) {
+    this.pos = createVector(x, y);
+    this.w = w;
+    this.h = h;
+  }
+
+  display() {
+    fill(100);
+    noStroke();
+    rect(this.pos.x, this.pos.y, this.w, this.h);
+  }
+
+  isColliding(ball) {
     return (
-      this.x < sqX + sqWidth &&
-      this.x + this.diameter > sqX &&
-      this.y < sqY + sqHeight &&
-      this.y + this.diameter > sqY
+      ball.pos.x + ball.radius > this.pos.x &&
+      ball.pos.x - ball.radius < this.pos.x + this.w &&
+      ball.pos.y + ball.radius > this.pos.y &&
+      ball.pos.y - ball.radius < this.pos.y + this.h
     );
+  }
+
+  getNormal(ball) {
+    let dx = max(this.pos.x - ball.pos.x, 0, ball.pos.x - (this.pos.x + this.w));
+    let dy = max(this.pos.y - ball.pos.y, 0, ball.pos.y - (this.pos.y + this.h));
+    if (dx > dy) {
+      return createVector(1, 0);
+    } else {
+      return createVector(0, 1);
+    }
+  }
+}
+// Square display
+class Cursor {
+  constructor() {
+    this.pos = createVector(width / 2, height / 2);
+    this.vel = createVector(0, 0);
+    this.speed = 1.5;
+    this.radius = 10;
+    this.dead = false;
+  }
+
+  update() {
+    if (this.dead) return;
+
+    let move = createVector(0, 0);
+    if (keyIsDown(87)) move.y -= this.speed; // W
+    if (keyIsDown(83)) move.y += this.speed; // S
+    if (keyIsDown(65)) move.x -= this.speed; // A
+    if (keyIsDown(68)) move.x += this.speed; // D
+
+    if (superSpeedActive) {
+      move.mult(2);
+    }
+// sliding effect (drifts yk)
+    this.vel.add(move);
+    this.vel.limit(10);  
+    this.pos.add(this.vel);
+    this.vel.mult(0.9);
+
+    for (let wall of walls) {
+      if (wall.isColliding(this)) {
+        let normal = wall.getNormal(this);
+        this.vel.reflect(normal);
+        this.pos.add(this.vel);
+        this.pos.x = constrain(this.pos.x, 0, width);
+        this.pos.y = constrain(this.pos.y, 0, height);
+      }
+    }
+    this.pos.x = constrain(this.pos.x, 0, width);
+    this.pos.y = constrain(this.pos.y, 0, height);
+  }
+
+  display() {
+    if (this.dead) return;
+    push();
+    translate(this.pos.x, this.pos.y);
+    fill(255, 255, 0);
+    noStroke();
+    rectMode(CENTER);
+    rect(0, 0, this.radius * 2, this.radius * 2);
+    pop();
+  }
+
+  die() {
+    this.dead = true;
   }
 }
 
 class Crystal {
-  constructor() {
-    this.x = random(width - 40); // Initial random position
-    this.y = random(height - 40);
-    this.size = 20; // Size of the crystal
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.size = 15;
   }
 
-  // Display the crystal
   display() {
-    if (crystalLoaded) {
-      image(crystal, this.x, this.y, this.size, this.size);
-    } else {
-      fill(0, 255, 255);
-      rect(this.x, this.y, this.size, this.size);
-    }
+    fill(0, 0, 255);
+    noStroke();
+    rect(this.pos.x, this.pos.y, this.size, this.size);
   }
 
-  // Check collision with the square
-  checkCollision(sqX, sqY, sqWidth, sqHeight) {
-    return (
-      this.x < sqX + sqWidth &&
-      this.x + this.size > sqX &&
-      this.y < sqY + sqHeight &&
-      this.y + this.size > sqY
+  isCollected(cursor) {
+    let d = dist(this.pos.x, this.pos.y, cursor.pos.x, cursor.pos.y);
+    return d < this.size + cursor.radius;
+  }
+
+  respawn() {
+    this.pos = createVector(random(20, width - 20), random(20, height - 20));
+  }
+}
+
+class PowerUp {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.size = 20;
+  }
+
+  display() {
+    fill(255, 165, 0);
+    noStroke();
+    triangle(
+      this.pos.x, this.pos.y - this.size / 2,
+      this.pos.x - this.size / 2, this.pos.y + this.size / 2,
+      this.pos.x + this.size / 2, this.pos.y + this.size / 2
     );
   }
 
-  // Randomize crystal position
-  randomizePosition() {
-    this.x = random(width - this.size);
-    this.y = random(height - this.size);
+  isCollected(cursor) {
+    let d = dist(this.pos.x, this.pos.y, cursor.pos.x, cursor.pos.y);
+    return d < this.size + cursor.radius;
+  }
+
+  // Spawns the items IN, IN canvas. IN. (was pain in the ass)
+  respawn() {
+    this.pos = createVector(random(20, width - 20), random(20, height - 20));
+  }
+}
+
+class Boss {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.size = 50;
+    this.health = 200;
+  }
+
+  update() {
+    let direction = cursor.pos.copy().sub(this.pos).normalize();
+    let speed = 1.5;
+    this.pos.add(direction.mult(speed));
+  }
+
+  // boss display (needs fixing too it not spawning)
+  display() {
+    fill(255, 0, 0);
+    noStroke();
+    ellipse(this.pos.x, this.pos.y, this.size * 2);
+  }
+
+  takeDamage(amount) {
+    this.health -= amount;
+  }
+
+  die() {
+    this.pos = createVector(width / 2, height / 2); // makes sure the boss is in center when wave 20
   }
 }

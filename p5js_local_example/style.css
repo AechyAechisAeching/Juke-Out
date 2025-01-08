@@ -7,3 +7,24 @@
      justify-content: center;
      box-sizing: border-box;
  }
+
+
+ .circle1,
+ .circle2 {
+  background: rgb(255, 0, 0);
+  height: 7rem;
+  width: 7rem;
+  position: absolute;
+  border-radius: 50%;
+}
+
+
+.circle1 {
+  top: 30%;
+  right: 20%;
+}
+.circle2 {
+  top: 20%;
+  left: 8%;
+  background-color: rgb(255, 0, 0);
+}

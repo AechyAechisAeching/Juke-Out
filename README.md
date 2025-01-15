@@ -6,13 +6,13 @@ I have made it with Javascript, html and css
 The goal of "Juke out" is to dodge the incoming enemies wich are the balls all over the canvas, if u collide with the enemy u lose.
 Collect as many cystals as possible for a better score!
 This game is in BETA so dont judge me yet
-Random Positioning for crystal is done
-Hitboxes are performing excellent
+
+
 
 TODO:
-Waves
+waves
 score
-Game over menu collapse
+Functioning startingscreen and maingame
 Start menu
 
 Features:
@@ -26,10 +26,7 @@ Positioning tutorial:
 https://p5js.org/examples/calculating-values-random/
 
 Bugs:
-Currently spawncamping,
-When the character spawns it has a chance to immediately get hit by one of the enemies wich HURTS A LOT
-Quality is very bad
-fps drops
+The startscreen is not doing so good with the main screen due css div
 
 Solutions:
 Make the enemy spawn from the corners or they start at the middle

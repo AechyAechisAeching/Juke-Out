@@ -1,30 +1,97 @@
  body {
      padding: 1%;
      margin: 0;
-     background-color: #dbdbdb;
+     background-color: #000000;
      display: flex;
      align-items: center;
      justify-content: center;
      box-sizing: border-box;
+     text-decoration: none;
  }
 
+
+.btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  width: 750px;
+  height: 180px;
+  border-radius: 1.5rem;
+  text-decoration: none;
+  color: black;
+  margin-top: 360px;
+  font-family: "inter";
+  font-weight: 1000;
+  font-style: italic;
+  font-size: 700%;
+}
+
+
+.logo {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: -10%;
+  right: 34%;
+}
+ 
+
+.face1,
+.face2 {
+  display: flex;
+  position: absolute;
+  height: 4rem;
+  width: 4rem;
+  z-index: 2;
+}
+
+.face1 {
+  top: 40%;
+  left: 20%;
+
+}
+
+.tail {
+  display: flex;
+  position: absolute;
+  width: 7rem;
+  height: 7rem;
+  top: 20%;
+  left: 12%;
+}
+
+.tail2 {
+  display: flex;
+  position: absolute;
+  width: 7rem;
+  height: 7rem;
+  left: 82%;
+}
+
+
+.face2 {
+  top: 68%;
+  right: 18%;
+}
 
  .circle1,
  .circle2 {
   background: rgb(255, 0, 0);
-  height: 7rem;
-  width: 7rem;
+  height: 8rem;
+  width: 8rem;
   position: absolute;
   border-radius: 50%;
 }
 
 
 .circle1 {
-  top: 30%;
-  right: 20%;
+  top: 65%;
+  right: 13%;
 }
 .circle2 {
-  top: 20%;
-  left: 8%;
+  top: 33%;
+  left: 18%;
   background-color: rgb(255, 0, 0);
 }

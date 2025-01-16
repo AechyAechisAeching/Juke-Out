@@ -50,15 +50,6 @@ function draw() {
   cursor.update();
   cursor.display();
 
-  // Display score and wave
-  fill(255);
-  textSize(24);
-  textAlign(RIGHT, TOP);
-  text("Score: " + score, width - 20, 20);
-  textSize(32);
-  textAlign(LEFT, TOP);
-  text("Wave: " + wave, 20, 20);
-
   if (balls.length === 0 && !isBossActive) {
     wave++;
     if (wave > 20) {

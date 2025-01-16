@@ -1,7 +1,7 @@
 var whichscreen = "maingame";
 
 function setup() {
-  createCanvas(1500, 690);
+  createCanvas(1520, 705);
 }
 
 function draw() {
@@ -16,26 +16,20 @@ function draw() {
 function mainGame() {
   background("black");
 
-  // At some point, you'll have to decide when the game is
-  // over: maybe once their lives drop to 0, or
-  // if their score reaches a certain point.
+  // right now the function is when your score is equal to 1 or higher it ends
   if (score === 1) {
     whichscreen = "endscreen";
   }
 }
 
-// Some little message to display once the game
+
+// Adjust later on
+//Deathscreen here
+// // Some little message to display once the game
 // is over.
 function endScreen() {
   background(0);
   textSize(80);
   text("GAME OVER", 515, 200);
   stroke();
-}
-
-// Adjust later on
-function keyPressed() {
-  if (keyCode === 66) {
-    score = score + 1;
-  }
 }

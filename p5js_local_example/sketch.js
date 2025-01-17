@@ -1,35 +1,43 @@
-var whichscreen = "maingame";
+
+const options = {
+  width: window.innerWidth,
+  height: window.innerHeight
+}
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+
 
 function setup() {
-  createCanvas(1520, 705);
+  canvas.width = options.width;
+  canvas.height = options.height;
+
+  requestAnimationFrame(loop)
+}
+
+function update() {
+
+  
 }
 
 function draw() {
-  if (whichscreen === "maingame") {
-    mainGame();
-  } else {
-    endScreen();
-  }
+  console.log("draw");
 }
 
-// All of your game logic can move into this function!
-function mainGame() {
-  background("black");
-
-  // right now the function is when your score is equal to 1 or higher it ends
-  if (score === 1) {
-    whichscreen = "endscreen";
-  }
+function loop() {
+update();
+draw();
+// debug()
 }
 
+// EVENTS
+window.addEventListener('load', setup);
 
-// Adjust later on
-//Deathscreen here
-// // Some little message to display once the game
-// is over.
-function endScreen() {
-  background(0);
-  textSize(80);
-  text("GAME OVER", 515, 200);
-  stroke();
+
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function randFloat(min, max) {
+  return Math.random() * (max - min + 1) + min;
 }

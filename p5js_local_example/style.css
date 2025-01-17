@@ -30,7 +30,6 @@
   font-style: italic;
   font-size: 700%;
   transition: 0.3s ease;
-
 }
 
 .btn:hover {
@@ -45,7 +44,6 @@
   background-color: white;
 }
 
-
 .logo {
   position: absolute;
   display: flex;
@@ -54,7 +52,6 @@
   top: -10%;
   right: 34%;
 }
- 
 
 .face1,
 .face2 {
@@ -88,7 +85,6 @@
   left: 82%;
 }
 
-
 .face2 {
   top: 68%;
   right: 18%;
@@ -102,7 +98,6 @@
   position: absolute;
   border-radius: 50%;
 }
-
 
 .circle1 {
   top: 65%;
